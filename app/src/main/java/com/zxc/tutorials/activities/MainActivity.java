@@ -13,7 +13,7 @@ import com.zxc.tutorials.R;
 import com.zxc.tutorials.utils.DialogUtils;
 import com.zxc.tutorials.utils.LocationUtils;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends LocationHelperActivity {
 
     private static final String TAG = "MainActivity";
 

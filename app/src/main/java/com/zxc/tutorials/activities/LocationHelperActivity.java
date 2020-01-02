@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -34,9 +35,9 @@ import com.zxc.tutorials.utils.DialogUtils;
 
 import java.util.ArrayList;
 
-public class BaseActivity extends AppCompatActivity {
+public class LocationHelperActivity extends AppCompatActivity {
 
-    private static final String TAG = "BaseActivity";
+    private static final String TAG = "LocationHelperActivity";
 
     private final int REQUEST_CODE_PLAY_SERVICES = 1;
     private final int REQUEST_CODE_LOCATION = 2;
