@@ -6,7 +6,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.zxc.tutorials.interfaces.DialogListener;
 
-public class DialogUtils {
+public class DialogUtil {
 
     public static void alert(Activity activity, String message) {
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(activity);

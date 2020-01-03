@@ -1,5 +1,9 @@
 package com.zxc.tutorials.permission;
 
 public interface PermissionCallback {
-    void onPermissionResult(int requestCode, PermissionEnum permissionResult);
+
+    void onGranted(int requestCode);
+
+    void onDenied(int requestCode, boolean isNeverAskAgain);
+
 }

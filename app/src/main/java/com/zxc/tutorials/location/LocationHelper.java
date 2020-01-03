@@ -1,21 +1,18 @@
-package com.zxc.tutorials.activities;
+package com.zxc.tutorials.location;
 
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -31,26 +28,20 @@ import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.zxc.tutorials.permission.PermissionCallback;
 import com.zxc.tutorials.permission.PermissionHelper;
-import com.zxc.tutorials.utils.DialogUtils;
 
-import java.util.ArrayList;
+public class LocationHelper extends AppCompatActivity {
 
-public class LocationHelperActivity extends AppCompatActivity {
-
-    private static final String TAG = "LocationHelperActivity";
+    private static final String TAG = "LocationHelper";
 
     private final int REQUEST_CODE_PLAY_SERVICES = 1;
     private final int REQUEST_CODE_LOCATION = 2;
     private final int REQUEST_CODE_GPS = 3;
 
-    private final String MESSAGE_LOCATION_PERMISSION = "Location permission is required to get the current address.";
-
     private LocationRequest mLocationRequest;
-
     private PermissionHelper mPermissionHelper;
 
     private void setup() {
-        mPermissionHelper = new PermissionHelper(this, permissionCallback);
+        mPermissionHelper = new PermissionHelper(this, mPermissionCallback);
 
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(500);
@@ -62,10 +53,15 @@ public class LocationHelperActivity extends AppCompatActivity {
 
     public void startLocationUpdates() {
         setup();
-        if (isGooglePlayServicesAvailable())
-            if (hasLocationPermission()) initGAPI();
-            else locationPermissionNeeded();
-        else playServicesNotFound();
+        if (isGooglePlayServicesAvailable()) {
+            if (mPermissionHelper.isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                initGAPI();
+            } else {
+                locationPermissionNeeded();
+            }
+        } else {
+            playServicesNotFound();
+        }
     }
 
     public void playServicesNotFound() {
@@ -88,22 +84,12 @@ public class LocationHelperActivity extends AppCompatActivity {
         return true;
     }
 
-    private boolean hasLocationPermission() {
-        return ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED;
-    }
-
     public void locationPermissionNeeded() {
 
     }
 
     public void askLocationPermission() {
-        ArrayList<String> permissionList = new ArrayList<>();
-        permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
-        mPermissionHelper.processPermission(permissionList, MESSAGE_LOCATION_PERMISSION, REQUEST_CODE_LOCATION);
+        mPermissionHelper.askPermission(REQUEST_CODE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
     @Override
@@ -111,23 +97,29 @@ public class LocationHelperActivity extends AppCompatActivity {
         mPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    private PermissionCallback permissionCallback = (requestCode, permissionResult) -> {
-        Log.e(TAG, "onPermissionResult: " + requestCode + " - " + permissionResult.name());
-        if (requestCode == REQUEST_CODE_LOCATION) {
-            switch (permissionResult) {
-                case GRANTED:
-                    initGAPI();
-                    break;
-                case NEVER_ASK_AGAIN:
+    private PermissionCallback mPermissionCallback = new PermissionCallback() {
+        @Override
+        public void onGranted(int requestCode) {
+            if (requestCode == REQUEST_CODE_LOCATION) {
+                initGAPI();
+            }
+        }
+
+        @Override
+        public void onDenied(int requestCode, boolean isNeverAskAgain) {
+            if (requestCode == REQUEST_CODE_LOCATION) {
+                if (isNeverAskAgain) {
                     locationPermissionNeverAsk();
-                    break;
+                } else {
+                    String MESSAGE_LOCATION_PERMISSION = "Location permission is required to get the current address.";
+                    mPermissionHelper.askAgainDialog(MESSAGE_LOCATION_PERMISSION);
+                }
             }
         }
     };
 
     public void locationPermissionNeverAsk() {
         // TODO: 02-01-2020 This means that user selected Don't Ask Again and denied the permission
-        DialogUtils.alert(this, "Grant location permission manually from settings.");
     }
 
     private void initGAPI() {
@@ -142,14 +134,20 @@ public class LocationHelperActivity extends AppCompatActivity {
             @Override
             public void onConnectionSuspended(int i) {
                 Log.e(TAG, "onConnectionSuspended: " + i);
+                googleFailure();
             }
         });
         mBuilder.addOnConnectionFailedListener(connectionResult -> {
             Log.e(TAG, "initGAPI: Google Api Client connection failed - " + connectionResult.getErrorMessage());
+            googleFailure();
         });
         mBuilder.addApi(LocationServices.API);
         GoogleApiClient mGoogleApiClient = mBuilder.build();
         mGoogleApiClient.connect();
+    }
+
+    public void googleFailure() {
+
     }
 
     private void checkGPS() {

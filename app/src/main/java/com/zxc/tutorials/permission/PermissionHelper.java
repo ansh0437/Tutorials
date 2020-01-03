@@ -1,114 +1,113 @@
 package com.zxc.tutorials.permission;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import com.zxc.tutorials.interfaces.DialogListener;
+import com.zxc.tutorials.utils.DialogUtil;
 
 public class PermissionHelper {
 
+    private final int REQUEST_CODE_SETTING = 1;
+
     private Activity mActivity;
+    private Fragment mFragment;
     private PermissionCallback mPermissionCallback;
-    private ArrayList<String> permission_list = new ArrayList<>();
-    private ArrayList<String> listPermissionsNeeded = new ArrayList<>();
-    private String dialogContent = "";
-    private int requestCode;
 
-    public PermissionHelper(Context mContext, PermissionCallback callback) {
-        this.mActivity = (Activity) mContext;
-        this.mPermissionCallback = callback;
+    private boolean isActivity = true;
+
+    private int iRequestCode;
+    private String mPermission;
+
+    public PermissionHelper(Activity mActivity, PermissionCallback permissionCallback) {
+        this.mActivity = mActivity;
+        this.mPermissionCallback = permissionCallback;
     }
 
-    public void processPermission(ArrayList<String> permissions, String dialogContent, int requestCode) {
-        this.permission_list = permissions;
-        this.dialogContent = dialogContent;
-        this.requestCode = requestCode;
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkAndRequestPermissions(permissions, requestCode)) {
-                mPermissionCallback.onPermissionResult(requestCode, PermissionEnum.GRANTED);
-            }
+    public PermissionHelper(Fragment mFragment, PermissionCallback permissionCallback) {
+        this.mFragment = mFragment;
+        this.mActivity = mFragment.requireActivity();
+        this.isActivity = false;
+        this.mPermissionCallback = permissionCallback;
+    }
+
+    public boolean isPermissionGranted(String permission) {
+        return ContextCompat.checkSelfPermission(mActivity, permission) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public void askPermission(int requestCode, String permission) {
+        this.iRequestCode = requestCode;
+        this.mPermission = permission;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isPermissionGranted(mPermission)) {
+            requestPermission();
         } else {
-            mPermissionCallback.onPermissionResult(requestCode, PermissionEnum.GRANTED);
+            mPermissionCallback.onGranted(iRequestCode);
         }
     }
 
-    private boolean checkAndRequestPermissions(ArrayList<String> permissions, int request_code) {
-        if (permissions.size() > 0) {
-            listPermissionsNeeded = new ArrayList<>();
-            for (int i = 0; i < permissions.size(); i++) {
-                int hasPermission = ContextCompat.checkSelfPermission(mActivity, permissions.get(i));
-                if (hasPermission != PackageManager.PERMISSION_GRANTED) {
-                    listPermissionsNeeded.add(permissions.get(i));
-                }
-            }
-            if (!listPermissionsNeeded.isEmpty()) {
-                ActivityCompat.requestPermissions(mActivity, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), request_code);
-                return false;
-            }
+    private void requestPermission() {
+        if (isActivity) {
+            ActivityCompat.requestPermissions(mActivity, new String[]{mPermission}, iRequestCode);
+        } else {
+            mFragment.requestPermissions(new String[]{mPermission}, iRequestCode);
         }
-        return true;
     }
 
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        if (requestCode == this.requestCode) {
-            if (grantResults.length > 0) {
-                Map<String, Integer> perms = new HashMap<>();
-                for (int i = 0; i < permissions.length; i++) {
-                    perms.put(permissions[i], grantResults[i]);
-                }
-                final ArrayList<String> pendingPermissions = new ArrayList<>();
-                for (int i = 0; i < listPermissionsNeeded.size(); i++) {
-                    if (perms.get(listPermissionsNeeded.get(i)) != PackageManager.PERMISSION_GRANTED) {
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(mActivity, listPermissionsNeeded.get(i)))
-                            pendingPermissions.add(listPermissionsNeeded.get(i));
-                        else {
-                            mPermissionCallback.onPermissionResult(this.requestCode, PermissionEnum.NEVER_ASK_AGAIN);
-                            settingsDialog();
-                            return;
-                        }
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == iRequestCode) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mPermissionCallback.onGranted(iRequestCode);
+            } else {
+                mPermissionCallback.onDenied(iRequestCode, isActivity
+                        ? !ActivityCompat.shouldShowRequestPermissionRationale(mActivity, mPermission)
+                        : !mFragment.shouldShowRequestPermissionRationale(mPermission));
+            }
+        }
+    }
+
+    public void askAgainDialog(String message) {
+        DialogUtil.confirmationAlert(mActivity, "Alert", message, "Ok",
+                "Cancel", false, new DialogListener() {
+                    @Override
+                    public void onNegativeClick(DialogInterface dialogInterface) {
+                        dialogInterface.dismiss();
+                    }
+
+                    @Override
+                    public void onPositiveClick(DialogInterface dialogInterface) {
+                        requestPermission();
+                        dialogInterface.dismiss();
                     }
                 }
-                if (pendingPermissions.size() > 0) {
-                    showMessageOKCancel(dialogContent,
-                            (dialog, which) -> {
-                                switch (which) {
-                                    case DialogInterface.BUTTON_POSITIVE:
-                                        processPermission(permission_list, dialogContent, PermissionHelper.this.requestCode);
-                                        break;
-                                    case DialogInterface.BUTTON_NEGATIVE:
-                                        if (permission_list.size() == pendingPermissions.size())
-                                            mPermissionCallback.onPermissionResult(PermissionHelper.this.requestCode, PermissionEnum.DENIED);
-                                        else
-                                            mPermissionCallback.onPermissionResult(PermissionHelper.this.requestCode, PermissionEnum.PARTIALLY_GRANTED);
-                                        break;
-                                }
-                            });
-                } else {
-                    mPermissionCallback.onPermissionResult(this.requestCode, PermissionEnum.GRANTED);
+        );
+    }
+
+    public void neverAskDialog() {
+        DialogUtil.confirmationAlert(mActivity, "Alert",
+                "Give permission manually from settings.", "Ok",
+                "Cancel", false, new DialogListener() {
+                    @Override
+                    public void onNegativeClick(DialogInterface dialogInterface) {
+                        dialogInterface.dismiss();
+                    }
+
+                    @Override
+                    public void onPositiveClick(DialogInterface dialogInterface) {
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.setData(Uri.parse("package:" + mActivity.getPackageName()));
+                        mActivity.startActivityForResult(intent, REQUEST_CODE_SETTING);
+                        dialogInterface.dismiss();
+                    }
                 }
-            }
-        }
-    }
-
-    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
-        new AlertDialog.Builder(mActivity)
-                .setMessage(message)
-                .setPositiveButton("Ok", okListener)
-                .setNegativeButton("Cancel", okListener)
-                .create()
-                .show();
-    }
-
-    private void settingsDialog() {
-
+        );
     }
 }

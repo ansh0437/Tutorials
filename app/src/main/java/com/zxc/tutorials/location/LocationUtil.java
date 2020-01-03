@@ -1,4 +1,4 @@
-package com.zxc.tutorials.utils;
+package com.zxc.tutorials.location;
 
 import android.content.Context;
 import android.location.Address;
@@ -8,7 +8,7 @@ import android.location.Location;
 import java.util.List;
 import java.util.Locale;
 
-public class LocationUtils {
+public class LocationUtil {
 
     public static String getAddress(Context context, Location location) {
         try {

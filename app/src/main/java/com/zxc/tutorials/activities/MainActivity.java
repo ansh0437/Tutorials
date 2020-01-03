@@ -1,87 +1,89 @@
 package com.zxc.tutorials.activities;
 
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.zxc.tutorials.R;
-import com.zxc.tutorials.utils.DialogUtils;
-import com.zxc.tutorials.utils.LocationUtils;
+import com.zxc.tutorials.location.LocationDemo;
+import com.zxc.tutorials.permission.PermissionDemo;
 
-public class MainActivity extends LocationHelperActivity {
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-    private static final String TAG = "MainActivity";
+public class MainActivity extends AppCompatActivity {
 
-    private TextView mAddressTextView;
+    private List<MenuDTO> menuList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mAddressTextView = findViewById(R.id.tvLocation);
+
+        menuList.add(new MenuDTO("Permission Demo", PermissionDemo.class));
+        menuList.add(new MenuDTO("Location Demo", LocationDemo.class));
+
+        RecyclerView mRecyclerView = findViewById(R.id.rvMenu);
+        mRecyclerView.setAdapter(new MenuAdapter());
     }
 
-    public void locationClick(View view) {
-        startLocationUpdates();
+    private void openDemo(Class aClass) {
+        startActivity(new Intent(this, aClass));
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    class MenuDTO implements Serializable {
+        String title;
+        Class cls;
+
+        public MenuDTO(String title, Class cls) {
+            this.title = title;
+            this.cls = cls;
+        }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-    }
+    class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.MenuHolder> {
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        removeLocationUpdates();
-    }
+        @NonNull
+        @Override
+        public MenuHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return new MenuHolder(LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.row_item_menu, parent, false));
+        }
 
-    /* Overridden Methods From Base Activity */
+        @Override
+        public void onBindViewHolder(@NonNull MenuHolder holder, int position) {
+            holder.bind(position);
+        }
 
-    @Override
-    public void playServicesNotFound() {
-        super.playServicesNotFound();
-        // TODO: 02-01-2020 Google Play Services not installed in phone
-    }
+        @Override
+        public int getItemCount() {
+            return menuList.size();
+        }
 
-    @Override
-    public void locationPermissionNeeded() {
-        super.locationPermissionNeeded();
-        // TODO: 02-01-2020 Ask for location permission
-        askLocationPermission();
-    }
+        class MenuHolder extends RecyclerView.ViewHolder {
+            private CardView cardView;
+            private TextView title;
 
-    @Override
-    public void locationPermissionNeverAsk() {
-        super.locationPermissionNeverAsk();
-        // TODO: 02-01-2020 This means that user selected Don't Ask Again and denied the permission
-    }
+            public MenuHolder(@NonNull View itemView) {
+                super(itemView);
+                cardView = itemView.findViewById(R.id.cvMenu);
+                title = itemView.findViewById(R.id.tvTitle);
+            }
 
-    @Override
-    public void gpsEnabled() {
-        super.gpsEnabled();
-    }
-
-    @Override
-    public void gpsDisabled() {
-        super.gpsDisabled();
-        DialogUtils.alert(this, "Gps is disabled");
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        super.onLocationChanged(location);
-        String address = LocationUtils.getAddress(this, location);
-        mAddressTextView.setText(address);
+            public void bind(int position) {
+                MenuDTO menu = menuList.get(position);
+                title.setText(menu.title);
+                cardView.setOnClickListener(v -> openDemo(menu.cls));
+            }
+        }
     }
 }
