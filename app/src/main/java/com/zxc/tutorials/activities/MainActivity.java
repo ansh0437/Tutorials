@@ -13,6 +13,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zxc.tutorials.R;
+import com.zxc.tutorials.imageselector.ImageSelectorDemo;
 import com.zxc.tutorials.location.LocationDemo;
 import com.zxc.tutorials.permission.PermissionDemo;
 
@@ -29,8 +30,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        menuList.add(new MenuDTO("Permission Demo", PermissionDemo.class));
-        menuList.add(new MenuDTO("Location Demo", LocationDemo.class));
+        menuList.add(new MenuDTO("Permission", PermissionDemo.class));
+        menuList.add(new MenuDTO("Location", LocationDemo.class));
+        menuList.add(new MenuDTO("Image Selector", ImageSelectorDemo.class));
 
         RecyclerView mRecyclerView = findViewById(R.id.rvMenu);
         mRecyclerView.setAdapter(new MenuAdapter());
