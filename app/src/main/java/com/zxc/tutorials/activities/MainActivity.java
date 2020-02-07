@@ -13,6 +13,8 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zxc.tutorials.R;
+import com.zxc.tutorials.dagger.DaggerDemo;
+import com.zxc.tutorials.genericAdapter.GenericAdapterDemo;
 import com.zxc.tutorials.imageselector.ImageSelectorDemo;
 import com.zxc.tutorials.location.LocationDemo;
 import com.zxc.tutorials.permission.PermissionDemo;
@@ -33,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
         menuList.add(new MenuDTO("Permission", PermissionDemo.class));
         menuList.add(new MenuDTO("Location", LocationDemo.class));
         menuList.add(new MenuDTO("Image Selector", ImageSelectorDemo.class));
+        menuList.add(new MenuDTO("Dagger 2", DaggerDemo.class));
+        menuList.add(new MenuDTO("Generic Adapter", GenericAdapterDemo.class));
 
         RecyclerView mRecyclerView = findViewById(R.id.rvMenu);
         mRecyclerView.setAdapter(new MenuAdapter());
