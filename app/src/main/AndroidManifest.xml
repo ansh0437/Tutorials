@@ -14,9 +14,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".genericAdapter.GenericAdapterDemo"></activity>
+        <activity android:name=".spinner.SpinnerDemo"/>
+        <activity android:name=".genericAdapter.GenericAdapterDemo" />
         <activity android:name=".dagger.DaggerDemo" />
-        <activity android:name=".customDialogs.CustomDialogDemo" />
         <activity android:name=".imageselector.ImageSelectorDemo" />
         <activity android:name=".location.LocationDemo" />
         <activity android:name=".permission.PermissionDemo" />

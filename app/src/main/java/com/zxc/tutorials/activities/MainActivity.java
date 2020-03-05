@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,6 +19,7 @@ import com.zxc.tutorials.genericAdapter.GenericAdapterDemo;
 import com.zxc.tutorials.imageselector.ImageSelectorDemo;
 import com.zxc.tutorials.location.LocationDemo;
 import com.zxc.tutorials.permission.PermissionDemo;
+import com.zxc.tutorials.spinner.SpinnerDemo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         menuList.add(new MenuDTO("Image Selector", ImageSelectorDemo.class));
         menuList.add(new MenuDTO("Dagger 2", DaggerDemo.class));
         menuList.add(new MenuDTO("Generic Adapter", GenericAdapterDemo.class));
+        menuList.add(new MenuDTO("Spinner", SpinnerDemo.class));
 
         RecyclerView mRecyclerView = findViewById(R.id.rvMenu);
         mRecyclerView.setAdapter(new MenuAdapter());
