@@ -20,6 +20,8 @@ import com.zxc.tutorials.imageselector.ImageSelectorDemo;
 import com.zxc.tutorials.location.LocationDemo;
 import com.zxc.tutorials.permission.PermissionDemo;
 import com.zxc.tutorials.spinner.SpinnerDemo;
+import com.zxc.tutorials.table.TableActivity;
+import com.zxc.tutorials.voice.VoiceCommands;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         menuList.add(new MenuDTO("Dagger 2", DaggerDemo.class));
         menuList.add(new MenuDTO("Generic Adapter", GenericAdapterDemo.class));
         menuList.add(new MenuDTO("Spinner", SpinnerDemo.class));
+        menuList.add(new MenuDTO("Voice Commands", VoiceCommands.class));
+        menuList.add(new MenuDTO("Tables", TableActivity.class));
 
         RecyclerView mRecyclerView = findViewById(R.id.rvMenu);
         mRecyclerView.setAdapter(new MenuAdapter());
