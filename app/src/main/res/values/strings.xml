@@ -1,3 +1,8 @@
 <resources>
+
     <string name="app_name">Tutorials</string>
+
+    <string name="wake_caption">To start demonstration say \"Enstructor\".</string>
+    <string name="command_caption">Say any of the following commands \"play\", \"pause\", \"next\" or \"previous\".</string>
+
 </resources>

@@ -1,2 +1,4 @@
+include ':models'
+include ':pocketsphinx'
 include ':app'
 rootProject.name='Tutorials'
