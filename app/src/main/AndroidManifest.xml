@@ -16,7 +16,8 @@
         android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".voice.SphnixVoiceActivity"></activity>
+        <activity android:name=".fileselector.FileSelectorDemo" />
+        <activity android:name=".voice.SphnixVoiceActivity" />
         <activity android:name=".table.TableActivity" />
         <activity android:name=".voice.VoiceCommands" />
         <activity android:name=".spinner.SpinnerDemo" />
